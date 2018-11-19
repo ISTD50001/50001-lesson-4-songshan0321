@@ -11,6 +11,8 @@ public class CharaContract {
     //TODO 7.1 Examine the static inner classes. No coding is needed
 
     //TODO 7.2 Prevent Instantiation of this Contract class
+    private CharaContract() {
+    }
 
     public static final class CharaEntry implements BaseColumns {
 

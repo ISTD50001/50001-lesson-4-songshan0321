@@ -38,9 +38,14 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         //TODO 7.12 get an instance of charaDbHelper
-
+        charaDbHelper = CharaDbHelper.createCharaDbHelper(this);
 
         //TODO 7.13 test the methods you wrote
+        // Test: Check Query One Row Random
+//        TestCharaDbHelper.testTable(charaDbHelper);
+        // Test: Check contents of table
+        TestCharaDbHelper.testQueryOneRowRandom(charaDbHelper);
+
 
         //TODO 8.1 Get References to the widgets
 

@@ -40,22 +40,32 @@ public class CharaDbHelper extends SQLiteOpenHelper {
     private SQLiteDatabase writeableDb;
     private static CharaDbHelper charaDbHelper;
 
+
     //TODO 7.4 Create the Constructor and make it a singleton
-    CharaDbHelper(Context context){
+    private CharaDbHelper(Context context){
         super(context, CharaContract.CharaEntry.TABLE_NAME, null, DATABASE_VERSION );
         this.context = context;
+    }
+
+    public static CharaDbHelper createCharaDbHelper(Context context){
+        if (charaDbHelper == null) {
+            CharaDbHelper charaDbHelper = new CharaDbHelper(context.getApplicationContext()); // point to app
+        }
+        return charaDbHelper;
     }
 
     //TODO 7.5 Complete onCreate. You may make use of fillTable below
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
-
+        sqLiteDatabase.execSQL(CharaContract.CharaSql.SQL_CREATE_TABLE);
+        fillTable(sqLiteDatabase);
     }
 
     //TODO 7.6 Complete onUpgrade
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
-
+        sqLiteDatabase.execSQL(CharaContract.CharaSql.SQL_DROP_TABLE);
+        onCreate(sqLiteDatabase);
     }
 
     //TODO 7.5 --- written for you
@@ -113,14 +123,23 @@ public class CharaDbHelper extends SQLiteOpenHelper {
     //TODO 7.8 query one row at random
     public CharaData queryOneRowRandom(){
 
-        return new CharaData("","","");
+        if (readableDb == null) {
+            readableDb = getReadableDatabase();
+        }
+        Cursor cursor = readableDb.rawQuery(CharaContract.CharaSql.SQL_QUERY_ONE_RANDOM_ROW,null);
 
+        return getDataFromCursor(0, cursor);
     }
 
     //TODO 7.9 queryOneRow gets the entire database and returns the row in position as a CharaData object
     public CharaData queryOneRow(int position){
 
-        return new CharaData("","","");
+        if (readableDb == null) {
+            readableDb = getReadableDatabase();
+        }
+        Cursor cursor = readableDb.rawQuery(CharaContract.CharaSql.SQL_QUERY_ONE_RANDOM_ROW,null);
+
+        return getDataFromCursor(position, cursor);
 
     }
 
@@ -130,6 +149,18 @@ public class CharaDbHelper extends SQLiteOpenHelper {
         String name=null;
         String description =null;
         Bitmap bitmap =null;
+
+        cursor.moveToPosition(position);
+        int nameIndex = cursor.getColumnIndex(CharaContract.CharaEntry.COL_NAME);
+        name = cursor.getString(nameIndex);
+
+        int descriptionIndex = cursor.getColumnIndex(CharaContract.CharaEntry.COL_DESCRIPTION);
+        description = cursor.getString(descriptionIndex);
+
+        int bitmapIndex = cursor.getColumnIndex(CharaContract.CharaEntry.COL_FILE);
+        byte[] bitmapData = cursor.getBlob(bitmapIndex);
+        bitmap = BitmapFactory.decodeByteArray(bitmapData, 0, bitmapData.length);
+
 
         return new CharaData(name, description, bitmap);
     }
@@ -147,7 +178,12 @@ public class CharaDbHelper extends SQLiteOpenHelper {
 
     //TODO 7.7 return the number of rows in the database
     public long queryNumRows(){
-        return 0;
+        if (readableDb == null) {
+            readableDb = getReadableDatabase();
+        }
+        return DatabaseUtils.queryNumEntries(
+                readableDb,
+                CharaContract.CharaEntry.TABLE_NAME);
     }
 
     public Context getContext(){
